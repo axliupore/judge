@@ -40,7 +40,7 @@ make run
 Or use Docker:
 
 ```bash
-docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge:0.0.1
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge:0.0.1
 ```
 
 ### Http

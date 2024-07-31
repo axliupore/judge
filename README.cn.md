@@ -1,6 +1,6 @@
 # Judge
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/axliupore/judge.svg)](https://pkg.go.dev/github.com/axliupore/judge)
+[![Go Reference](https://pkg.go.dev/badge/github.com/axliupore/judge.svg)](https://pkg.go.dev/github.com/axliupore/judge) [![Go Report Card](https://goreportcard.com/badge/github.com/axliupore/judge)](https://goreportcard.com/report/github.com/axliupore/judge)
 
 [English](README.md)
 
@@ -36,7 +36,13 @@ make all
 make run
 ```
 
-或者使用 docker：
+或者使用 docker，不用 `Nsq` 直接用下面的方法即可：
+
+```bash
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge:0.0.1
+```
+
+如果使用 `Nsq` ，需要指定 `Nsq` 运行的位置，本项目默认 `Nsq` 是放置在主机上：
 
 ```bash
 docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge:0.0.1

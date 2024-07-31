@@ -24,6 +24,7 @@ func main() {
 	r.Use(middleware.Cors())
 
 	r.POST("/judge", handle.JudgeServer)
+	r.POST("/exec", handle.ExecServer)
 
 	go func() {
 		err = r.Run(fmt.Sprintf(":%d", config.CoreConfig.Server.Port))

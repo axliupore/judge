@@ -21,7 +21,24 @@ func JudgeServer(c *gin.Context) {
 	}
 
 	l := logic.NewLogic()
-	res, st, err := l.Start(r)
+	res, st, err := l.ProcessJudgeRequest(r)
+	if err != nil {
+		xres.Http(c, status.Code(st), err.Error(), nil)
+		return
+	}
+
+	xres.Http(c, status.Code(st), "", res)
+}
+
+func ExecServer(c *gin.Context) {
+	r := &request.JudgeRequest{}
+	if err := c.ShouldBindJSON(r); err != nil {
+		xres.Http(c, status.Code(status.ParamsError), status.ParamsError, nil)
+		return
+	}
+
+	l := logic.NewLogic()
+	res, st, err := l.ExecuteJudgeRequest(r)
 	if err != nil {
 		xres.Http(c, status.Code(st), err.Error(), nil)
 		return

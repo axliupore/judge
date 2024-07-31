@@ -7,6 +7,7 @@ import (
 	"github.com/axliupore/judge/pkg/exec"
 	"github.com/axliupore/judge/pkg/log"
 	"github.com/axliupore/judge/pkg/request"
+	"github.com/axliupore/judge/pkg/response"
 	"github.com/axliupore/judge/pkg/run"
 	"github.com/axliupore/judge/pkg/status"
 	"github.com/jinzhu/copier"
@@ -19,7 +20,8 @@ type Logic struct {
 
 // Params struct encapsulates compilation parameters.
 type Params struct {
-	Args        []string // Arguments
+	ExecArgs    []string // Exec Args
+	RunArgs     []string // Run Args
 	Env         []string // Environment variables
 	Content     string   // Content
 	Input       string   // Input
@@ -31,6 +33,7 @@ type Params struct {
 	ExecFile    string   // Exec file name
 	FileId      string   // File ID
 	Language    string   // code language
+	IsExec      bool     // Is exec file
 }
 
 // Constants for default values
@@ -58,91 +61,119 @@ func NewLogic() *Logic {
 	}
 }
 
-// Start processes a JudgeRequest and returns a JudgeResponse or an error.
-func (l *Logic) Start(r *request.JudgeRequest) (*request.JudgeResponse, string, error) {
-	// Create a new judge instance based on the requested language
-	j := judge.NewJudge(r.Language)
-	if j == nil {
-		log.Logger.Error("unsupported programming language")
-		return nil, status.ParamsError, errors.New("unsupported programming language")
+// ProcessJudgeRequest processes a JudgeRequest and returns a JudgeResponse or an error.
+func (l *Logic) ProcessJudgeRequest(r *request.JudgeRequest) (*response.JudgeResponse, string, error) {
+	params, st, err := l.copyParamsFromRequest(r)
+	if err != nil {
+		return nil, st, err
 	}
-
-	// Initialize params with default values
-	params := NewParams()
-
-	// Copy request data to params
-	if err := copier.Copy(params, r); err != nil {
-		log.Logger.Errorf("failed to copy params: %v", err)
-		return nil, status.InternalError, nil
-	}
-
-	// Set params for running or executing based on judge type
-	params.Args = j.RunArgs()
-	params.Env = j.Env()
-	params.ExecFile = j.ExecFile()
-	params.RunFile = j.RunFile()
-	params.Language = j.Language()
 
 	// Run the code with the given params
-	runRes, err := l.Run(params)
+	runRes, err := l.runCode(params)
 	if err != nil {
-		log.Logger.Errorf("failed to Run %v", err)
+		log.Logger.Errorf("failed to run code: %v", err)
 		return nil, status.InternalError, err
 	}
 
 	// Judge the run result
-	accept, fileId, output, time, memory := l.JudgeRun(params.ExecFile, runRes)
-	defer l.DeleteFile(fileId)
+	accept, fileId, output, time, memory := l.evaluateRunResult(params.ExecFile, runRes)
 
 	// Handle non-accepted results
 	if !accept {
 		if runRes.Status == status.TimeLimitExceeded || runRes.Status == status.MemoryLimitExceeded {
-			log.Logger.Errorf("failed run accepted :%v", runRes.Status)
+			log.Logger.Errorf("run failed: %v", runRes.Status)
 			return nil, runRes.Status, nil
 		}
-		log.Logger.Errorf("failed run accepted :%v", output)
+		log.Logger.Errorf("run failed: %v", output)
 		return nil, runRes.Status, errors.New(output)
 	}
 
 	// If it's not an executable task, return JudgeResponse with output, time, and memory
-	if !j.IsExec() {
-		return &request.JudgeResponse{
+	if !params.IsExec || r.NotExec {
+		return &response.JudgeResponse{
 			Output: output,
 			Time:   time,
 			Memory: memory,
+			FileId: fileId,
 		}, runRes.Status, nil
 	}
 
-	// Set params for executing the code
-	params.Args = j.ExecArgs()
 	params.FileId = fileId
 
-	// Execute the code with the given params
-	execRes, err := l.Exec(params)
+	return l.executeWithParams(params)
+}
+
+// ExecuteJudgeRequest executes a JudgeRequest and returns a JudgeResponse or an error.
+func (l *Logic) ExecuteJudgeRequest(r *request.JudgeRequest) (*response.JudgeResponse, string, error) {
+	params, st, err := l.copyParamsFromRequest(r)
 	if err != nil {
-		log.Logger.Errorf("failed exec %v", err)
-		return nil, runRes.Status, err
+		return nil, st, err
+	}
+
+	return l.executeWithParams(params)
+}
+
+// removeFile deletes the file identified by fileId.
+func (l *Logic) removeFile(fileId string) {
+	if fileId == "" {
+		return
+	}
+	if err := l.service.DeleteRequest(fileId); err != nil {
+		log.Logger.Errorf("removeFile error: %v", err)
+	}
+}
+
+func (l *Logic) executeWithParams(params *Params) (*response.JudgeResponse, string, error) {
+	defer l.removeFile(params.FileId)
+	// Execute the code with the given params
+	execRes, err := l.executeCode(params)
+	if err != nil {
+		log.Logger.Errorf("failed to execute code: %v", err)
+		return nil, execRes.Status, err
 	}
 
 	// Judge the exec result
-	st, output, time, memory := l.JudgeExec(execRes)
+	st, output, time, memory := l.evaluateExecResult(execRes)
 	if st != status.Accepted {
-		log.Logger.Errorf("failed exec %v %v", st, output)
+		log.Logger.Errorf("execution failed: %v %v", st, output)
 		return nil, st, errors.New(output)
 	}
 
 	// Return JudgeResponse with output, time, and memory
-	return &request.JudgeResponse{
+	return &response.JudgeResponse{
 		Output: output,
 		Time:   time,
 		Memory: memory,
 	}, st, nil
 }
 
-// Run sends a run request with given params and returns the run response or an error.
-func (l *Logic) Run(params *Params) (*run.Response, error) {
+func (l *Logic) copyParamsFromRequest(r *request.JudgeRequest) (*Params, string, error) {
+	j := judge.NewJudge(r.Language)
+	if j == nil {
+		return nil, status.ParamsError, errors.New("unsupported programming language")
+	}
+
+	// Initialize params with default values
+	p := NewParams()
+
+	// Copy request data to params
+	if err := copier.Copy(p, r); err != nil {
+		return nil, status.InternalError, err
+	}
+
+	p.ExecArgs = j.ExecArgs()
+	p.RunArgs = j.RunArgs()
+	p.Env = j.Env()
+	p.IsExec = j.IsExec()
+	p.RunFile = j.RunFile()
+	p.ExecFile = j.ExecFile()
+	return p, "", nil
+}
+
+// runCode sends a run request with given params and returns the run response or an error.
+func (l *Logic) runCode(params *Params) (*run.Response, error) {
 	cmd := run.Cmd{
-		Args:        params.Args,
+		Args:        params.RunArgs,
 		Env:         params.Env,
 		Files:       []map[string]interface{}{{"content": params.Input}, {"name": "stdout", "max": 10240}, {"name": "stderr", "max": 10240}},
 		CpuLimit:    params.CpuLimit,
@@ -164,10 +195,10 @@ func (l *Logic) Run(params *Params) (*run.Response, error) {
 	return l.service.SendRunRequest(runRequest)
 }
 
-// Exec sends an exec request with given params and returns the exec response or an error.
-func (l *Logic) Exec(params *Params) (*exec.Response, error) {
+// executeCode sends an exec request with given params and returns the exec response or an error.
+func (l *Logic) executeCode(params *Params) (*exec.Response, error) {
 	cmd := exec.Cmd{
-		Args:        params.Args,
+		Args:        params.ExecArgs,
 		Env:         params.Env,
 		Files:       []map[string]interface{}{{"content": params.Input}, {"name": "stdout", "max": 10240}, {"name": "stderr", "max": 10240}},
 		CpuLimit:    params.CpuLimit,
@@ -184,8 +215,8 @@ func (l *Logic) Exec(params *Params) (*exec.Response, error) {
 	return l.service.SendExecRequest(execRequest)
 }
 
-// JudgeRun judges the run result and returns whether it's accepted, along with output, time, and memory.
-func (l *Logic) JudgeRun(execFile string, res *run.Response) (bool, string, string, int64, int64) {
+// evaluateRunResult judges the run result and returns whether it's accepted, along with output, time, and memory.
+func (l *Logic) evaluateRunResult(execFile string, res *run.Response) (bool, string, string, int64, int64) {
 	switch res.Status {
 	case status.Accepted:
 		return true, res.FileIds[execFile], res.Files["stdout"], res.Time, res.Memory
@@ -194,22 +225,12 @@ func (l *Logic) JudgeRun(execFile string, res *run.Response) (bool, string, stri
 	}
 }
 
-// JudgeExec judges the exec result and returns status, output, time, and memory.
-func (l *Logic) JudgeExec(res *exec.Response) (string, string, int64, int64) {
+// evaluateExecResult judges the exec result and returns status, output, time, and memory.
+func (l *Logic) evaluateExecResult(res *exec.Response) (string, string, int64, int64) {
 	switch res.Status {
 	case status.Accepted:
 		return res.Status, res.Files["stdout"], res.Time, res.Memory
 	default:
 		return res.Status, res.Files["stderr"], res.Time, res.Memory
-	}
-}
-
-// DeleteFile deletes the file identified by fileId.
-func (l *Logic) DeleteFile(fileId string) {
-	if fileId == "" {
-		return
-	}
-	if err := l.service.DeleteRequest(fileId); err != nil {
-		log.Logger.Errorf("deleteFile err: %v", err)
 	}
 }

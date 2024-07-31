@@ -31,7 +31,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 		rsp := &response.Response{}
 
-		res, st, err := l.Start(r)
+		res, st, err := l.ProcessJudgeRequest(r)
 		rsp.Code = status.Code(st)
 		rsp.Data = res
 		if err != nil {

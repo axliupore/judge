@@ -18,17 +18,18 @@ RUN go generate ./cmd/go-judge/version \
 
 FROM debian:latest
 
-RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free" > /etc/apt/sources.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free" >> /etc/apt/sources.list
+RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources
 
-RUN apt update && apt upgrade -y && \
+RUN apt update && \
+    apt upgrade -y && \
     apt install -y --fix-missing g++ golang-go python3 openjdk-17-jre-headless openjdk-17-jdk && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt update &&  apt upgrade -y && \
-    apt install -y --fix-missing nodejs npm && \
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y curl gnupg && \
+    curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt install -y nodejs && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
 RUN npm config set registry https://registry.npmmirror.com

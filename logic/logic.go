@@ -63,9 +63,20 @@ func NewLogic() *Logic {
 
 // ProcessJudgeRequest processes a JudgeRequest and returns a JudgeResponse or an error.
 func (l *Logic) ProcessJudgeRequest(r *request.JudgeRequest) (*response.JudgeResponse, string, error) {
+	// delete file
+	if r.DeleteFile {
+		l.removeFile(r.FileId)
+		return nil, status.Accepted, nil
+	}
+
 	params, st, err := l.copyParamsFromRequest(r)
 	if err != nil {
 		return nil, st, err
+	}
+
+	// exec
+	if r.FileId != "" {
+		return l.executeWithParams(params)
 	}
 
 	// Run the code with the given params
@@ -99,6 +110,7 @@ func (l *Logic) ProcessJudgeRequest(r *request.JudgeRequest) (*response.JudgeRes
 	}
 
 	params.FileId = fileId
+	defer l.removeFile(params.FileId)
 
 	return l.executeWithParams(params)
 }
@@ -124,7 +136,6 @@ func (l *Logic) removeFile(fileId string) {
 }
 
 func (l *Logic) executeWithParams(params *Params) (*response.JudgeResponse, string, error) {
-	defer l.removeFile(params.FileId)
 	// Execute the code with the given params
 	execRes, err := l.executeCode(params)
 	if err != nil {

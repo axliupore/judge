@@ -22,10 +22,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			log.Logger.Error(err)
 			return
 		}
-		if err := verify(r); err != nil {
-			log.Logger.Error(err)
-			return
-		}
 
 		l := logic.NewLogic()
 

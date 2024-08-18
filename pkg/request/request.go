@@ -11,4 +11,5 @@ type JudgeRequest struct {
 	Nsq         string `json:"nsq,omitempty"`
 	NotExec     bool   `json:"notExec,omitempty"`
 	FileId      string `json:"fileId,omitempty"`
+	DeleteFile  bool   `json:"deleteFile,omitempty"`
 }

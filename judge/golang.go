@@ -11,7 +11,7 @@ func (golang *Golang) RunArgs() []string {
 	return []string{"/usr/bin/go", "run", "main.go"}
 }
 
-func (golang *Golang) IsExec() bool {
+func (golang *Golang) IsBuild() bool {
 	return false
 }
 
@@ -27,4 +27,4 @@ func (golang *Golang) RunFile() string {
 	return "main.go"
 }
 
-func (golang *Golang) ExecFile() string { return "" }
+func (golang *Golang) ExecFile() []string { return nil }

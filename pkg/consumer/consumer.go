@@ -2,8 +2,6 @@ package consumer
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/axliupore/judge/config"
 	"github.com/axliupore/judge/pkg/log"
 	"github.com/axliupore/judge/pkg/nsq"
 	"github.com/axliupore/judge/pkg/response"
@@ -25,7 +23,8 @@ func (c *Service) SendResponse(res *response.Response, resultQueue string) error
 	}
 
 	// Create a new producer instance.
-	producer, err := nsq.NewProducer(fmt.Sprintf("%s:%d", config.CoreConfig.Nsq.Address, config.CoreConfig.Nsq.Nsqd))
+	// todo 修改为参数传递的
+	producer, err := nsq.NewProducer("")
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ func (cpp *Cpp) RunArgs() []string {
 	return []string{"/usr/bin/g++", "main.cpp", "-o", "main"}
 }
 
-func (cpp *Cpp) IsExec() bool {
+func (cpp *Cpp) IsBuild() bool {
 	return true
 }
 
@@ -27,4 +27,4 @@ func (cpp *Cpp) RunFile() string {
 	return "main.cpp"
 }
 
-func (cpp *Cpp) ExecFile() string { return "main" }
+func (cpp *Cpp) ExecFile() []string { return []string{"main"} }

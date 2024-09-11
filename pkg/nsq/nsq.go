@@ -12,8 +12,8 @@ func NewConsumer(topic, channel string) (*nsq.Consumer, error) {
 }
 
 // NewProducer creates a new producer instance for NSQ.
-func NewProducer(nsqdAddress string) (*nsq.Producer, error) {
-	producer, err := nsq.NewProducer(nsqdAddress, nsq.NewConfig())
+func NewProducer(address string) (*nsq.Producer, error) {
+	producer, err := nsq.NewProducer(address, nsq.NewConfig())
 	if err != nil {
 		return nil, err
 	}

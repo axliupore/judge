@@ -11,7 +11,7 @@ func (python *Python) RunArgs() []string {
 	return []string{"/usr/bin/python3", "main.py"}
 }
 
-func (python *Python) IsExec() bool {
+func (python *Python) IsBuild() bool {
 	return false
 }
 
@@ -27,4 +27,4 @@ func (python *Python) RunFile() string {
 	return "main.py"
 }
 
-func (python *Python) ExecFile() string { return "" }
+func (python *Python) ExecFile() []string { return nil }

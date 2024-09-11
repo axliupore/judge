@@ -11,7 +11,7 @@ func (c *C) RunArgs() []string {
 	return []string{"/usr/bin/gcc", "main.c", "-o", "main"}
 }
 
-func (c *C) IsExec() bool {
+func (c *C) IsBuild() bool {
 	return true
 }
 
@@ -27,4 +27,4 @@ func (c *C) RunFile() string {
 	return "main.c"
 }
 
-func (c *C) ExecFile() string { return "main" }
+func (c *C) ExecFile() []string { return []string{"main"} }

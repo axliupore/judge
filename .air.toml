@@ -1,0 +1,21 @@
+root = "."
+
+[build]
+cmd = "go build -o ./tmp/judge ./cmd"
+bin = "./tmp/judge --http=6048"
+delay = 1000
+exclude_dir = ["tmp", "vendor", "test", "doc", "go-judge"]
+exclude_file = []
+exclude_regex = ["_test.go"]
+include_dir = ["cmd", "config", "handle", "internal", "judge", "logic", "pkg"]
+include_ext = ["go", "tpl", "tmpl", "html"]
+include_file = ["./cmd/wire_gen.go"]
+
+[log]
+time = true
+
+[misc]
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = true

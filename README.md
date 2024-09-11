@@ -52,7 +52,7 @@ docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host
 ### Http
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"language": "cpp", "content":"#include <iostream>\nusing namespace std;\nint main() {\ncout << 10 << endl;\n}"}' http://127.0.0.1:6048/judge
+curl -X POST -H "Content-Type: application/json" -d '[{"language": "cpp", "code":"#include <iostream>\nusing namespace std;\nint main() {\ncout << \"judge\" << endl;\n}"}]' http://127.0.0.1:6048
 ```
 
 ### Nsq

@@ -11,7 +11,7 @@ func (java *Java) RunArgs() []string {
 	return []string{"/usr/bin/javac", "Main.java"}
 }
 
-func (java *Java) IsExec() bool {
+func (java *Java) IsBuild() bool {
 	return true
 }
 
@@ -27,6 +27,6 @@ func (java *Java) RunFile() string {
 	return "Main.java"
 }
 
-func (java *Java) ExecFile() string {
-	return "Main.class"
+func (java *Java) ExecFile() []string {
+	return []string{"Main.class"}
 }

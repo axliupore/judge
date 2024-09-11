@@ -11,7 +11,7 @@ func (js *JavaScript) RunArgs() []string {
 	return []string{"/usr/bin/node", "main.js"}
 }
 
-func (js *JavaScript) IsExec() bool {
+func (js *JavaScript) IsBuild() bool {
 	return false
 }
 
@@ -27,6 +27,6 @@ func (js *JavaScript) RunFile() string {
 	return "main.js"
 }
 
-func (js *JavaScript) ExecFile() string {
-	return ""
+func (js *JavaScript) ExecFile() []string {
+	return nil
 }

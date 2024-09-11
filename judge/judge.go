@@ -16,7 +16,7 @@ type Judge interface {
 
 	RunArgs() []string // Arguments for running the file
 
-	IsExec() bool // Whether the file is executable
+	IsBuild() bool // Whether the file is build
 
 	Language() string // Programming language
 
@@ -24,7 +24,7 @@ type Judge interface {
 
 	RunFile() string // Name of the file to run
 
-	ExecFile() string // Name of the file to execute
+	ExecFile() []string // Name of the file to execute
 }
 
 // NewJudge creates a new Judge instance based on the given judgeType.

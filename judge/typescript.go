@@ -11,7 +11,7 @@ func (ts *TypeScript) RunArgs() []string {
 	return []string{"/usr/bin/node", "main.ts"}
 }
 
-func (ts *TypeScript) IsExec() bool {
+func (ts *TypeScript) IsBuild() bool {
 	return false
 }
 
@@ -27,6 +27,6 @@ func (ts *TypeScript) RunFile() string {
 	return "main.ts"
 }
 
-func (ts *TypeScript) ExecFile() string {
-	return ""
+func (ts *TypeScript) ExecFile() []string {
+	return nil
 }

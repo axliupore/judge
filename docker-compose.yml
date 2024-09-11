@@ -8,11 +8,11 @@ services:
     ports:
       - "4150:4150"
       - "4151:4151"
-#  judge:
-#    container_name: judge
-#    image: trialoj/judge
-#    restart: always
-#    privileged: true
-#    shm_size: 2048m
-#    ports:
-#      - "6048:6048"
+  judge:
+    container_name: judge
+    image: trialoj/judge
+    restart: always
+    privileged: true
+    shm_size: 2048m
+    ports:
+      - "6048:6048"

@@ -139,7 +139,7 @@ func (s *Server) Delete(r []*request.Delete) {
 
 func (s *Server) run(r *cmd.Request, p *Params, j judge.Judge) (*cmd.Response, error) {
 
-	r.Cmd[0].Files = []map[string]interface{}{{"content": ""}, {"name": "stdout", "max": 102400}, {"name": "stderr", "max": 102400}}
+	r.Cmd[0].Files = []map[string]interface{}{{"content": ""}, {"name": "stdout", "max": 1024000}, {"name": "stderr", "max": 1024000}}
 	r.Cmd[0].CopyIn = map[string]map[string]string{j.RunFile(): {"content": p.Code}}
 
 	return s.c.Send(r)
@@ -147,7 +147,7 @@ func (s *Server) run(r *cmd.Request, p *Params, j judge.Judge) (*cmd.Response, e
 
 func (s *Server) build(r *cmd.Request, p *Params, j judge.Judge) (*cmd.Response, error) {
 
-	r.Cmd[0].Files = []map[string]interface{}{{"content": ""}, {"name": "stdout", "max": 102400}, {"name": "stderr", "max": 102400}}
+	r.Cmd[0].Files = []map[string]interface{}{{"content": ""}, {"name": "stdout", "max": 1024000}, {"name": "stderr", "max": 1024000}}
 	r.Cmd[0].CopyIn = map[string]map[string]string{j.RunFile(): {"content": p.Code}}
 
 	return s.c.Send(r)
@@ -155,7 +155,7 @@ func (s *Server) build(r *cmd.Request, p *Params, j judge.Judge) (*cmd.Response,
 
 func (s *Server) exec(r *cmd.Request, p *Params, j judge.Judge) (*cmd.Response, error) {
 
-	r.Cmd[0].Files = []map[string]interface{}{{"content": p.Input}, {"name": "stdout", "max": 102400}, {"name": "stderr", "max": 102400}}
+	r.Cmd[0].Files = []map[string]interface{}{{"content": p.Input}, {"name": "stdout", "max": 1024000}, {"name": "stderr", "max": 1024000}}
 	r.Cmd[0].CopyIn = map[string]map[string]string{j.ExecFile()[0]: {"fileId": p.FileId}}
 	r.Cmd[0].Args = j.ExecArgs()
 	r.Cmd[0].CopyOutCached = nil

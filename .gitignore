@@ -5,3 +5,5 @@ main
 go-judge
 
 tmp
+
+./cmd/judge

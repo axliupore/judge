@@ -39,13 +39,13 @@ make run
 或者使用 docker，不用 `Nsq` 直接用下面的方法即可：
 
 ```bash
-docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge:0.0.1
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge --http=6048
 ```
 
 如果使用 `Nsq` ，需要指定 `Nsq` 运行的位置，本项目默认 `Nsq` 是放置在主机上：
 
 ```bash
-docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge:0.0.1
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge --http=6048
 ```
 
 ### http

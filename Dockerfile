@@ -4,11 +4,12 @@ WORKDIR /judge
 
 COPY . .
 
-ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOPROXY=https://goproxy.cn,direct
 
 RUN go mod download -x
 
-RUN go build -o main
+WORKDIR /judge/cmd
+RUN go build -o judge
 
 WORKDIR /judge/go-judge
 RUN go mod download -x
@@ -38,9 +39,10 @@ RUN npm install -g typescript
 
 WORKDIR /judge
 
-COPY --from=build /judge/main  /judge/go-judge/go-judge  /judge/go-judge/mount.yaml /judge/config.yaml /judge/
+COPY --from=build /judge/cmd/judge  /judge/go-judge/go-judge  /judge/go-judge/mount.yaml /judge/run.sh /judge/
 
-RUN echo '#!/bin/sh\n./main &\n./go-judge' > /judge/start.sh && chmod +x /judge/start.sh
+EXPOSE 6048
 
+RUN chmod +x /judge/run.sh
 
-ENTRYPOINT ["/judge/start.sh"]
+ENTRYPOINT ["/judge/run.sh"]

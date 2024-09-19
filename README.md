@@ -40,13 +40,13 @@ make run
 Or use Docker without Nsq by simply running the following command:
 
 ```bash
-docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge:0.0.1
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge trialoj/judge --http=6048
 ```
 
 If using Nsq, you need to specify where Nsq is running. By default, Nsq is placed on the host machine in this project:
 
 ```bash
-docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge:0.0.1
+docker run -d --privileged --shm-size=2048m -p 6048:6048 --name=judge --add-host="host.docker.internal:host-gateway" trialoj/judge --http=6048
 ```
 
 ### Http

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"github.com/axliupore/judge/pkg/log"
 	"github.com/axliupore/judge/pkg/request"
 	"github.com/axliupore/judge/pkg/response"
@@ -71,10 +72,10 @@ func parse[R any](c *gin.Context) (r []R, err error) {
 	}
 
 	// Verify the parsed request objects.
-	if err = verify.Slice[R](r); err != nil {
+	if err = verify.Slice[R](r); err != nil || len(b) == 0 || len(r) == 0 {
 		log.Logger.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": status.ParamsError})
-		return nil, err
+		return nil, errors.New("param error")
 	}
 
 	return r, err
